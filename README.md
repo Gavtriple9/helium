@@ -2,6 +2,8 @@
 
 > A GPU-accelerated math object viewer built in Rust
 
+![main](./docs/images/helium.png)
+
 ## Technology Stack
 
 | Component  | Crate(s)                     |
@@ -75,6 +77,7 @@ Scaffolded host projects are included under `mobile/`:
 
 - Android host app: `mobile/android`
 - iOS host app template: `mobile/ios`
+- macOS host app template: `mobile/macos`
 
 ### Android Host
 
@@ -112,8 +115,29 @@ Generate an Xcode project from template spec:
 
 Then open `mobile/ios/Helium.xcodeproj` in Xcode and sign/build.
 
+### macOS Host
+
+Prerequisites:
+
+- Xcode command line tools
+- `xcodegen` (`brew install xcodegen`)
+
+Build Rust XCFramework:
+
+```bash
+./scripts/mobile/build-macos-xcframework.sh
+```
+
+Generate a macOS Xcode project from template spec:
+
+```bash
+./scripts/mobile/generate-macos-project.sh
+```
+
+Then open `mobile/macos/Helium.xcodeproj` in Xcode and build/run.
+
 ### What This Verifies Today
 
 - Rust artifacts are built and linked into native mobile hosts.
 - Host UIs call a minimal Rust ABI function (`helium_ffi_ping`) to verify linkage.
-- Full viewer lifecycle wiring for native iOS/Android event loop integration can be added as the next phase.
+- Native iOS/macOS projects can launch the Rust viewer runtime directly from app entrypoint.

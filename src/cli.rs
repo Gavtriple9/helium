@@ -2,7 +2,7 @@
 use anyhow::Result;
 use clap::{Arg, ArgMatches, Command};
 
-use helium::run_viewer;
+use helium::run_helium;
 
 pub const RUN: &str = "run";
 
@@ -26,6 +26,6 @@ pub mod run {
             tracing_subscriber::fmt::init();
         }
 
-        run_viewer()
+        run_helium()
     }
 }

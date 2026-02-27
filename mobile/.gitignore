@@ -1,5 +1,7 @@
 ios/HeliumRust.xcframework/
 ios/Helium.xcodeproj/
+macos/HeliumRust.xcframework/
+macos/Helium.xcodeproj/
 android/.gradle/
 android/app/build/
 android/build/

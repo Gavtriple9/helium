@@ -1,0 +1,25 @@
+name: Helium
+options:
+  bundleIdPrefix: dev.helium
+settings:
+  base:
+    PRODUCT_NAME: Helium
+targets:
+  Helium:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: Helium
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.helium.macos
+        INFOPLIST_FILE: Helium/Info.plist
+    dependencies:
+      - framework: HeliumRust.xcframework
+      - sdk: AppKit.framework
+      - sdk: Carbon.framework
+      - sdk: Metal.framework
+      - sdk: QuartzCore.framework
+      - sdk: Foundation.framework
+
