@@ -20,15 +20,13 @@ impl App {
 
 impl ApplicationHandler<State> for App {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-        #[allow(unused_mut)]
-        let mut window_attributes = Window::default_attributes().with_title("helium");
+        let window_attributes = Window::default_attributes().with_title("helium");
 
         let window = Arc::new(event_loop.create_window(window_attributes).unwrap());
         self.state = Some(pollster::block_on(State::new(window)).unwrap());
     }
 
-    #[allow(unused_mut)]
-    fn user_event(&mut self, _event_loop: &ActiveEventLoop, mut event: State) {
+    fn user_event(&mut self, _event_loop: &ActiveEventLoop, event: State) {
         self.state = Some(event);
     }
 
@@ -56,7 +54,7 @@ impl ApplicationHandler<State> for App {
                     }
                     Err(wgpu::SurfaceError::Timeout) => {}
                     Err(wgpu::SurfaceError::OutOfMemory) => event_loop.exit(),
-                    Err(e) => tracing::error!("Unable to render {}", e),
+                    Err(e) => tracing::error!("Unable to render {e}"),
                 }
             }
             WindowEvent::CursorMoved { position, .. } => {

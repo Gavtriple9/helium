@@ -6,6 +6,7 @@ edition.workspace = true
 [dependencies]
 anyhow.workspace = true
 async-trait.workspace = true
+bytemuck.workspace = true
 pollster.workspace = true
 tracing.workspace = true
 winit.workspace = true

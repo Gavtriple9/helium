@@ -8,6 +8,7 @@ edition = "2024"
 [workspace.dependencies]
 anyhow = "1.0.102"
 async-trait = "0.1.89"
+bytemuck = "1.25.0"
 clap = "4.5.60"
 ctrlc = { version = "3.5.2", features = ["termination"] }
 egui = "0.33.3"
