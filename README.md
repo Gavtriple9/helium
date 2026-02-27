@@ -68,3 +68,52 @@ cargo check --target x86_64-linux-android
 - iOS packaging/signing must be done from Xcode (or `xcodebuild`) with an app host project.
 - Android packaging/signing must be done with Android SDK/NDK + Gradle.
 - This repository is now structured so the core viewer runtime can be reused by those native app hosts.
+
+## Mobile Host Scaffolds
+
+Scaffolded host projects are included under `mobile/`:
+
+- Android host app: `mobile/android`
+- iOS host app template: `mobile/ios`
+
+### Android Host
+
+Prerequisites:
+
+- Android Studio (SDK + NDK)
+- `cargo-ndk` (`cargo install cargo-ndk`)
+
+Build Rust libraries into Android `jniLibs`:
+
+```bash
+./scripts/mobile/build-android-libs.sh
+```
+
+Then open `mobile/android` in Android Studio and run/build the app.
+
+### iOS Host
+
+Prerequisites:
+
+- Xcode command line tools
+- `xcodegen` (`brew install xcodegen`)
+
+Build Rust XCFramework:
+
+```bash
+./scripts/mobile/build-ios-xcframework.sh
+```
+
+Generate an Xcode project from template spec:
+
+```bash
+./scripts/mobile/generate-ios-project.sh
+```
+
+Then open `mobile/ios/Helium.xcodeproj` in Xcode and sign/build.
+
+### What This Verifies Today
+
+- Rust artifacts are built and linked into native mobile hosts.
+- Host UIs call a minimal Rust ABI function (`helium_ffi_ping`) to verify linkage.
+- Full viewer lifecycle wiring for native iOS/Android event loop integration can be added as the next phase.

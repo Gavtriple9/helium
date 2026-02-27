@@ -1,0 +1,21 @@
+name: Helium
+options:
+  bundleIdPrefix: dev.helium
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+targets:
+  Helium:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: Helium
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.helium
+        INFOPLIST_FILE: Helium/Info.plist
+        SWIFT_OBJC_BRIDGING_HEADER: Helium/Helium-Bridging-Header.h
+    dependencies:
+      - framework: HeliumRust.xcframework
+
