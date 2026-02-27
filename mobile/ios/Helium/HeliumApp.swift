@@ -1,11 +1,6 @@
-import SwiftUI
+import Foundation
 
-@main
-struct HeliumApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-    }
+enum HeliumAppEntrypoint {
+    static let note = "iOS entrypoint is main.m so winit can own UIApplicationMain"
 }
 

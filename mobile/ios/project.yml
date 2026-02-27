@@ -15,7 +15,9 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.helium
         INFOPLIST_FILE: Helium/Info.plist
-        SWIFT_OBJC_BRIDGING_HEADER: Helium/Helium-Bridging-Header.h
     dependencies:
       - framework: HeliumRust.xcframework
+      - sdk: UIKit.framework
+      - sdk: Metal.framework
+      - sdk: QuartzCore.framework
 
