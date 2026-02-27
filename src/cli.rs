@@ -2,6 +2,9 @@
 use anyhow::Result;
 use clap::{Arg, ArgMatches, Command};
 
+use helium_core::App;
+use winit::event_loop::EventLoop;
+
 pub const RUN: &str = "run";
 
 pub mod setup {
@@ -23,6 +26,11 @@ pub mod run {
         if matches.get_flag("verbose") {
             tracing_subscriber::fmt::init();
         }
+
+        let event_loop = EventLoop::new().unwrap();
+        let mut app = App::new();
+        event_loop.run_app(&mut app).unwrap();
+
         Ok(())
     }
 }
