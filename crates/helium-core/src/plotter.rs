@@ -53,7 +53,7 @@ impl PlotRenderer {
             }],
         });
 
-        let vertices = generate_vertices(1.0, 5.0);
+        let vertices = generate_vertices(1.0, 5.0, 0.0);
 
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Vertex Buffer"),
@@ -122,8 +122,8 @@ impl PlotRenderer {
         }
     }
 
-    pub fn update(&mut self, gpu: &GpuState, amp: f32, freq: f32) {
-        let vertices = generate_vertices(amp, freq);
+    pub fn update(&mut self, gpu: &GpuState, amp: f32, freq: f32, phase: f32) {
+        let vertices = generate_vertices(amp, freq, phase);
         gpu.get_queue()
             .write_buffer(&self.vertex_buffer, 0, bytemuck::cast_slice(&vertices));
     }
@@ -136,11 +136,11 @@ impl PlotRenderer {
     }
 }
 
-fn generate_vertices(amp: f32, freq: f32) -> Vec<Vertex> {
+fn generate_vertices(amp: f32, freq: f32, phase: f32) -> Vec<Vertex> {
     (0..1000)
         .map(|i| {
             let x = i as f32 / 999.0;
-            let y = (x * freq).sin() * amp;
+            let y = ((x * freq) + phase.to_radians()).sin() * amp;
             Vertex {
                 position: [x * 2.0 - 1.0, y],
             }

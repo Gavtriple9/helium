@@ -18,6 +18,7 @@ pub struct App {
 
     amplitude: f32,
     frequency: f32,
+    phase: f32,
 }
 
 impl App {
@@ -31,6 +32,7 @@ impl App {
             egui_renderer: None,
             amplitude: 0.5,
             frequency: 8.0,
+            phase: 0.0,
         }
     }
 
@@ -46,7 +48,7 @@ impl App {
             return Ok(());
         }
 
-        plot.update(gpu, self.amplitude, self.frequency);
+        plot.update(gpu, self.amplitude, self.frequency, self.phase);
 
         let output = gpu.get_current_texture()?;
         let view = output.texture.create_view(&Default::default());
@@ -83,8 +85,9 @@ impl App {
 
         let full_output = self.egui_ctx.run(raw_input, |ctx| {
             egui::Window::new("Controls").show(ctx, |ui| {
-                ui.add(egui::Slider::new(&mut self.amplitude, 0.0..=1.0).text("Amplitude"));
-                ui.add(egui::Slider::new(&mut self.frequency, 1.0..=20.0).text("Frequency"));
+                ui.add(egui::Slider::new(&mut self.amplitude, -1.0..=1.0).text("Amplitude"));
+                ui.add(egui::Slider::new(&mut self.frequency, 1.0..=100.0).text("Frequency"));
+                ui.add(egui::Slider::new(&mut self.phase, 0.0..=360.0).text("Phase"));
             });
         });
 
