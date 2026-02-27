@@ -5,7 +5,8 @@ use clap::Command;
 
 const HELIUM_VERSION: Option<&str> = option_env!("CARGO_PKG_VERSION");
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let command = Command::new("helium")
         .version(HELIUM_VERSION.unwrap_or("unknown"))
         .about("A GPU-accelerated math object viewer built in Rust")
@@ -15,7 +16,7 @@ fn main() -> Result<()> {
 
     let matches = command.get_matches();
     match matches.subcommand() {
-        Some((cli::RUN, matches)) => cli::run::run(matches)?,
+        Some((cli::RUN, matches)) => cli::run::run(matches).await?,
         _ => unreachable!(),
     }
 

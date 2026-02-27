@@ -1,28 +1,30 @@
+use crate::state::State;
+use std::sync::Arc;
 use winit::{
     application::ApplicationHandler,
-    event::WindowEvent,
+    event::{KeyEvent, WindowEvent},
     event_loop::ActiveEventLoop,
-    window::{Window, WindowAttributes},
+    keyboard::{KeyCode, PhysicalKey},
+    window::WindowAttributes,
 };
 
 pub struct App {
-    window: Option<Window>,
+    state: Option<State>,
 }
 
 impl App {
     pub fn new() -> Self {
-        Self { window: None }
+        Self { state: None }
     }
 }
 
-impl ApplicationHandler for App {
+impl ApplicationHandler<State> for App {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         // Create window here
-        let window = event_loop
-            .create_window(WindowAttributes::default().with_title("Math Viewer"))
-            .unwrap();
-
-        self.window = Some(window);
+        let window_attributes = WindowAttributes::default().with_title("helium");
+        let window = Arc::new(event_loop.create_window(window_attributes).unwrap());
+        self.state = Some(State::new(window).unwrap());
+        tracing::debug!("Application resumed and window created");
     }
 
     fn window_event(
@@ -31,11 +33,35 @@ impl ApplicationHandler for App {
         _window_id: winit::window::WindowId,
         event: WindowEvent,
     ) {
+        let state = match &mut self.state {
+            Some(canvas) => canvas,
+            None => return,
+        };
+
         match event {
-            WindowEvent::CloseRequested => {
-                event_loop.exit();
+            WindowEvent::CloseRequested => event_loop.exit(),
+            WindowEvent::Resized(size) => state.resize(size.width, size.height),
+            WindowEvent::RedrawRequested => {
+                state.render();
             }
+            WindowEvent::KeyboardInput {
+                event:
+                    KeyEvent {
+                        physical_key: PhysicalKey::Code(code),
+                        state: key_state,
+                        ..
+                    },
+                ..
+            } => match (code, key_state.is_pressed()) {
+                (KeyCode::Escape, true) => event_loop.exit(),
+                _ => {}
+            },
             _ => {}
         }
+    }
+
+    fn user_event(&mut self, _event_loop: &ActiveEventLoop, event: State) {
+        // This is where proxy.send_event() ends up
+        self.state = Some(event);
     }
 }
