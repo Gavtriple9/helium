@@ -142,9 +142,3 @@ Generate a macOS Xcode project from template spec:
 ```
 
 Then open `mobile/macos/Helium.xcodeproj` in Xcode and build/run.
-
-### What This Verifies Today
-
-- Rust artifacts are built and linked into native mobile hosts.
-- Host UIs call a minimal Rust ABI function (`helium_ffi_ping`) to verify linkage.
-- Native iOS/macOS projects can launch the Rust viewer runtime directly from app entrypoint.
