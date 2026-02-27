@@ -12,6 +12,7 @@ APP_TARGET="$DIST_DIR/$APP_NAME"
 ZIP_TARGET="$DIST_DIR/Helium-macos.app.zip"
 
 "$ROOT_DIR/scripts/mobile/build-macos-xcframework.sh"
+"$ROOT_DIR/scripts/mobile/generate-macos-icon.sh"
 "$ROOT_DIR/scripts/mobile/generate-macos-project.sh"
 
 rm -rf "$DERIVED_DATA_DIR"

@@ -41,6 +41,7 @@ rustup target add \
 	aarch64-apple-darwin \
 	aarch64-apple-ios \
 	aarch64-apple-ios-sim \
+	x86_64-apple-ios \
 	aarch64-linux-android \
 	armv7-linux-androideabi \
 	x86_64-linux-android
@@ -105,6 +106,12 @@ Build Rust XCFramework:
 
 ```bash
 ./scripts/mobile/build-ios-xcframework.sh
+```
+
+Generate iOS app icons from the shared source image:
+
+```bash
+./scripts/mobile/generate-ios-icons.sh
 ```
 
 Generate an Xcode project from template spec:

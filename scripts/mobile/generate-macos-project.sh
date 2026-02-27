@@ -17,6 +17,8 @@ if [[ ! -d "$XCFRAMEWORK_PATH" ]]; then
   "$ROOT_DIR/scripts/mobile/build-macos-xcframework.sh"
 fi
 
+"$ROOT_DIR/scripts/mobile/generate-macos-icon.sh"
+
 rm -rf "$PROJECT_PATH"
 
 xcodegen generate \

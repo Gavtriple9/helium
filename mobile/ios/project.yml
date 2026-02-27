@@ -15,6 +15,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.helium
         INFOPLIST_FILE: Helium/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     dependencies:
       - framework: HeliumRust.xcframework
       - sdk: UIKit.framework
