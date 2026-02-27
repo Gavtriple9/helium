@@ -1,4 +1,5 @@
 mod app;
-mod state;
+mod gpu;
+mod plotter;
 
 pub use app::App;
