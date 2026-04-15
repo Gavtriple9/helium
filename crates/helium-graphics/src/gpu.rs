@@ -1,12 +1,11 @@
-use anyhow;
 use anyhow::Result;
 use std::sync::Arc;
 use winit::window::Window;
 
 pub struct GpuState {
     surface: wgpu::Surface<'static>,
-    device: Arc<wgpu::Device>,
-    queue: Arc<wgpu::Queue>,
+    device: wgpu::Device,
+    queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
 }
@@ -15,11 +14,7 @@ impl GpuState {
     pub async fn new(window: Arc<Window>) -> Result<Self> {
         let size = window.inner_size();
 
-        // The instance is a handle to our GPU
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
-            backends: wgpu::Backends::PRIMARY,
-            ..Default::default()
-        });
+        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle());
 
         let surface = instance.create_surface(window).unwrap();
 
@@ -44,9 +39,6 @@ impl GpuState {
 
         let surface_caps = surface.get_capabilities(&adapter);
 
-        // Shader code in this tutorial assumes an Srgb surface texture. Using a different
-        // one will result all the colors comming out darker. If you want to support non
-        // Srgb surfaces, you'll need to account for that when drawing to the frame.
         let surface_format = surface_caps
             .formats
             .iter()
@@ -68,9 +60,6 @@ impl GpuState {
         if size.width > 0 && size.height > 0 {
             surface.configure(&device, &config);
         }
-
-        let device = Arc::new(device);
-        let queue = Arc::new(queue);
 
         Ok(Self {
             surface,
@@ -95,19 +84,19 @@ impl GpuState {
         self.size
     }
 
-    pub fn get_current_texture(&self) -> Result<wgpu::SurfaceTexture, wgpu::SurfaceError> {
+    pub(crate) fn current_texture(&self) -> wgpu::CurrentSurfaceTexture {
         self.surface.get_current_texture()
     }
 
-    pub fn get_device(&self) -> Arc<wgpu::Device> {
-        self.device.clone()
+    pub fn device(&self) -> &wgpu::Device {
+        &self.device
     }
 
-    pub fn get_queue(&self) -> Arc<wgpu::Queue> {
-        self.queue.clone()
+    pub fn queue(&self) -> &wgpu::Queue {
+        &self.queue
     }
 
-    pub fn get_config(&self) -> &wgpu::SurfaceConfiguration {
+    pub fn config(&self) -> &wgpu::SurfaceConfiguration {
         &self.config
     }
 }

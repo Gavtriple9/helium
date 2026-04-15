@@ -1,4 +1,4 @@
-use crate::{gpu::GpuState, plotter::PlotRenderer};
+use helium_graphics::{Frame, GpuState, PlotRenderer};
 use std::sync::Arc;
 use winit::{
     application::ApplicationHandler,
@@ -36,7 +36,7 @@ impl App {
         }
     }
 
-    fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+    fn render(&mut self) {
         let window = self.window.as_ref().expect("window should be initialized");
         let gpu = self.gpu.as_mut().expect("gpu should be initialized");
         let plot = self
@@ -45,37 +45,16 @@ impl App {
             .expect("plot renderer should be initialized");
 
         if gpu.surface_size().width == 0 || gpu.surface_size().height == 0 {
-            return Ok(());
+            return;
         }
 
         plot.update(gpu, self.amplitude, self.frequency, self.phase);
 
-        let output = gpu.get_current_texture()?;
-        let view = output.texture.create_view(&Default::default());
+        let Some(mut frame) = Frame::begin(gpu) else {
+            return;
+        };
 
-        let mut encoder = gpu
-            .get_device()
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-
-        {
-            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: Some("Plot Pass"),
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
-                        store: wgpu::StoreOp::Store,
-                    },
-                    depth_slice: None,
-                })],
-                depth_stencil_attachment: None,
-                occlusion_query_set: None,
-                timestamp_writes: None,
-            });
-
-            plot.render(&mut pass);
-        }
+        plot.render_to_frame(&mut frame);
 
         let raw_input = self
             .egui_state
@@ -83,7 +62,7 @@ impl App {
             .expect("egui state should be initialized")
             .take_egui_input(window);
 
-        let full_output = self.egui_ctx.run(raw_input, |ctx| {
+        let full_output = self.egui_ctx.run_ui(raw_input, |ctx| {
             egui::Window::new("Controls").show(ctx, |ui| {
                 ui.add(egui::Slider::new(&mut self.amplitude, -1.0..=1.0).text("Amplitude"));
                 ui.add(egui::Slider::new(&mut self.frequency, 1.0..=100.0).text("Frequency"));
@@ -112,28 +91,24 @@ impl App {
             .expect("egui renderer should be initialized");
 
         for (texture_id, image_delta) in &full_output.textures_delta.set {
-            egui_renderer.update_texture(
-                gpu.get_device().as_ref(),
-                gpu.get_queue().as_ref(),
-                *texture_id,
-                image_delta,
-            );
+            egui_renderer.update_texture(gpu.device(), gpu.queue(), *texture_id, image_delta);
         }
 
         egui_renderer.update_buffers(
-            gpu.get_device().as_ref(),
-            gpu.get_queue().as_ref(),
-            &mut encoder,
+            gpu.device(),
+            gpu.queue(),
+            &mut frame.encoder,
             &paint_jobs,
             &screen_descriptor,
         );
 
         {
-            let mut ui_pass = encoder
+            let mut ui_pass = frame
+                .encoder
                 .begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: Some("egui Pass"),
                     color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                        view: &view,
+                        view: &frame.view,
                         resolve_target: None,
                         ops: wgpu::Operations {
                             load: wgpu::LoadOp::Load,
@@ -144,6 +119,7 @@ impl App {
                     depth_stencil_attachment: None,
                     occlusion_query_set: None,
                     timestamp_writes: None,
+                    multiview_mask: None,
                 })
                 .forget_lifetime();
 
@@ -154,11 +130,9 @@ impl App {
             egui_renderer.free_texture(texture_id);
         }
 
-        gpu.get_queue().submit(Some(encoder.finish()));
-        output.present();
+        frame.submit(gpu);
 
         window.request_redraw();
-        Ok(())
     }
 }
 
@@ -186,8 +160,7 @@ impl ApplicationHandler for App {
         let options = egui_wgpu::RendererOptions {
             ..Default::default()
         };
-        let egui_renderer =
-            egui_wgpu::Renderer::new(gpu.get_device().as_ref(), gpu.get_config().format, options);
+        let egui_renderer = egui_wgpu::Renderer::new(gpu.device(), gpu.config().format, options);
 
         self.egui_state = Some(egui_state);
         self.egui_renderer = Some(egui_renderer);
@@ -213,18 +186,7 @@ impl ApplicationHandler for App {
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
             WindowEvent::Resized(size) => gpu.resize(size),
-            WindowEvent::RedrawRequested => match self.render() {
-                Ok(()) => {}
-                Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
-                    if let Some(gpu) = self.gpu.as_mut() {
-                        let size = gpu.surface_size();
-                        gpu.resize(size);
-                    }
-                }
-                Err(wgpu::SurfaceError::Timeout) => {}
-                Err(wgpu::SurfaceError::OutOfMemory) => event_loop.exit(),
-                Err(wgpu::SurfaceError::Other) => {}
-            },
+            WindowEvent::RedrawRequested => self.render(),
             _ => {}
         }
     }

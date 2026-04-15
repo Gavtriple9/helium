@@ -1,15 +1,11 @@
 [package]
-name = "helium-core"
+name = "helium-graphics"
 version = "0.1.0"
 edition.workspace = true
 
 [dependencies]
 anyhow.workspace = true
-egui.workspace = true
-egui-wgpu.workspace = true
-egui-winit.workspace = true
-helium-graphics.workspace = true
-pollster.workspace = true
+bytemuck.workspace = true
 tracing.workspace = true
 winit.workspace = true
 wgpu.workspace = true

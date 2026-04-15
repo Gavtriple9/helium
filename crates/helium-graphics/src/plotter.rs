@@ -1,4 +1,4 @@
-use crate::gpu::GpuState;
+use crate::{Frame, GpuState};
 use wgpu::util::DeviceExt;
 
 #[repr(C)]
@@ -16,8 +16,8 @@ pub struct PlotRenderer {
 
 impl PlotRenderer {
     pub fn new(gpu: &GpuState) -> Self {
-        let device = &gpu.get_device();
-        let queue = &gpu.get_queue();
+        let device = gpu.device();
+        let queue = gpu.queue();
 
         let initial_color: [f32; 4] = [0.2, 1.0, 0.8, 1.0];
         let color_buffer = device.create_buffer(&wgpu::BufferDescriptor {
@@ -64,8 +64,8 @@ impl PlotRenderer {
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render Pipeline Layout"),
-                bind_group_layouts: &[&color_bind_group_layout],
-                push_constant_ranges: &[],
+                bind_group_layouts: &[Some(&color_bind_group_layout)],
+                immediate_size: 0,
             });
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -89,7 +89,7 @@ impl PlotRenderer {
                 module: &shader,
                 entry_point: Some("fs_main"),
                 targets: &[Some(wgpu::ColorTargetState {
-                    format: gpu.get_config().format,
+                    format: gpu.config().format,
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
@@ -110,7 +110,7 @@ impl PlotRenderer {
                 mask: !0,
                 alpha_to_coverage_enabled: false,
             },
-            multiview: None,
+            multiview_mask: None,
             cache: None,
         });
 
@@ -124,7 +124,7 @@ impl PlotRenderer {
 
     pub fn update(&mut self, gpu: &GpuState, amp: f32, freq: f32, phase: f32) {
         let vertices = generate_vertices(amp, freq, phase);
-        gpu.get_queue()
+        gpu.queue()
             .write_buffer(&self.vertex_buffer, 0, bytemuck::cast_slice(&vertices));
     }
 
@@ -133,6 +133,28 @@ impl PlotRenderer {
         pass.set_bind_group(0, &self.color_bind_group, &[]);
         pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         pass.draw(0..self.vertex_count, 0..1);
+    }
+
+    pub fn render_to_frame(&self, frame: &mut Frame) {
+        let mut pass = frame
+            .encoder
+            .begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("Plot Pass"),
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: &frame.view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                        store: wgpu::StoreOp::Store,
+                    },
+                    depth_slice: None,
+                })],
+                depth_stencil_attachment: None,
+                occlusion_query_set: None,
+                timestamp_writes: None,
+                multiview_mask: None,
+            });
+        self.render(&mut pass);
     }
 }
 
