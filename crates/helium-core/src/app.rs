@@ -7,6 +7,7 @@ use winit::{
     window::{Window, WindowAttributes, WindowId},
 };
 
+/// The main application struct that manages the window, GPU state, plot renderer, and egui context.
 pub struct App {
     window: Option<Arc<Window>>,
     gpu: Option<GpuState>,
@@ -22,6 +23,7 @@ pub struct App {
 }
 
 impl App {
+    /// Creates a new instance of the `App` struct with default values for all fields.
     pub fn new() -> Self {
         Self {
             window: None,
@@ -36,6 +38,10 @@ impl App {
         }
     }
 
+    /// Renders the plot and egui UI by acquiring a frame, updating the plot vertices,
+    /// running the egui context to generate paint jobs, and submitting the commands to the GPU.
+    ///
+    /// This method is called in response to a redraw request and handles all rendering logic for the application.
     fn render(&mut self) {
         let window = self.window.as_ref().expect("window should be initialized");
         let gpu = self.gpu.as_mut().expect("gpu should be initialized");

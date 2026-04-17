@@ -23,7 +23,7 @@ impl Frame {
         let view = output.texture.create_view(&Default::default());
         let encoder = gpu
             .device()
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
 
         Some(Self {
             output,

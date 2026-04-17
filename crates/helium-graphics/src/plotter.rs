@@ -1,12 +1,27 @@
 use crate::{Frame, GpuState};
 use wgpu::util::DeviceExt;
 
+/// A vertex representing a point in 2D space, used for plotting.
 #[repr(C)]
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 struct Vertex {
     position: [f32; 2],
 }
 
+/// Generates a vector of vertices representing a sine wave based on the given amplitude, frequency, and phase.
+fn generate_vertices(amp: f32, freq: f32, phase: f32) -> Vec<Vertex> {
+    (0..1000)
+        .map(|i| {
+            let x = i as f32 / 999.0;
+            let y = ((x * freq) + phase.to_radians()).sin() * amp;
+            Vertex {
+                position: [x * 2.0 - 1.0, y],
+            }
+        })
+        .collect()
+}
+
+/// A simple plot renderer that generates vertices for a sine wave and renders them using a shader.
 pub struct PlotRenderer {
     vertex_buffer: wgpu::Buffer,
     vertex_count: u32,
@@ -15,6 +30,7 @@ pub struct PlotRenderer {
 }
 
 impl PlotRenderer {
+    /// Creates a new `PlotRenderer` by initializing the vertex buffer, color bind group, and render pipeline.
     pub fn new(gpu: &GpuState) -> Self {
         let device = gpu.device();
         let queue = gpu.queue();
@@ -122,12 +138,14 @@ impl PlotRenderer {
         }
     }
 
+    /// Updates the vertex buffer with new vertices generated from the given amplitude, frequency, and phase.
     pub fn update(&mut self, gpu: &GpuState, amp: f32, freq: f32, phase: f32) {
         let vertices = generate_vertices(amp, freq, phase);
         gpu.queue()
             .write_buffer(&self.vertex_buffer, 0, bytemuck::cast_slice(&vertices));
     }
 
+    /// Renders the plot using the provided render pass, setting the pipeline, bind group, and vertex buffer before drawing.
     pub fn render(&self, pass: &mut wgpu::RenderPass<'_>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.color_bind_group, &[]);
@@ -135,6 +153,7 @@ impl PlotRenderer {
         pass.draw(0..self.vertex_count, 0..1);
     }
 
+    /// Renders the plot to the given frame by beginning a render pass, calling the `render` method, and then submitting the commands.
     pub fn render_to_frame(&self, frame: &mut Frame) {
         let mut pass = frame
             .encoder
@@ -156,16 +175,4 @@ impl PlotRenderer {
             });
         self.render(&mut pass);
     }
-}
-
-fn generate_vertices(amp: f32, freq: f32, phase: f32) -> Vec<Vertex> {
-    (0..1000)
-        .map(|i| {
-            let x = i as f32 / 999.0;
-            let y = ((x * freq) + phase.to_radians()).sin() * amp;
-            Vertex {
-                position: [x * 2.0 - 1.0, y],
-            }
-        })
-        .collect()
 }

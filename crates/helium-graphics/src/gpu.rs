@@ -2,15 +2,29 @@ use anyhow::Result;
 use std::sync::Arc;
 use winit::window::Window;
 
+/// Represents the state of the GPU, including the device, queue, and surface configuration.
 pub struct GpuState {
-    surface: wgpu::Surface<'static>,
+    /// The GPU device handle.
     device: wgpu::Device,
+    /// The GPU command queue.
     queue: wgpu::Queue,
+
+    /// The surface to render to.
+    surface: wgpu::Surface<'static>,
+    /// The surface configuration.
     config: wgpu::SurfaceConfiguration,
+    /// The current size of the surface.
     size: winit::dpi::PhysicalSize<u32>,
 }
 
 impl GpuState {
+    /// Initializes the GPU state by creating a device, queue, and configuring the surface.
+    ///
+    /// # Arguments
+    /// * `window` - An `Arc` to the window to render to.
+    ///
+    /// # Returns
+    /// A `Result` containing the initialized `GpuState` or an error if initialization fails.
     pub async fn new(window: Arc<Window>) -> Result<Self> {
         let size = window.inner_size();
 
@@ -70,6 +84,12 @@ impl GpuState {
         })
     }
 
+    /// Resizes the surface to the new size and reconfigures it.
+    ///
+    /// This method should be called when the window is resized to ensure the surface matches the new size.
+    ///
+    /// # Arguments    
+    /// * `new_size` - The new size to resize the surface to.
     pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
         self.size = new_size;
 
@@ -80,22 +100,27 @@ impl GpuState {
         }
     }
 
+    /// Returns the current size of the surface.
     pub fn surface_size(&self) -> winit::dpi::PhysicalSize<u32> {
         self.size
     }
 
+    /// Acquires the current surface texture for rendering.
     pub(crate) fn current_texture(&self) -> wgpu::CurrentSurfaceTexture {
         self.surface.get_current_texture()
     }
 
+    /// Returns a reference to the GPU device.
     pub fn device(&self) -> &wgpu::Device {
         &self.device
     }
 
+    /// Returns a reference to the GPU command queue.
     pub fn queue(&self) -> &wgpu::Queue {
         &self.queue
     }
 
+    /// Returns a reference to the surface configuration.
     pub fn config(&self) -> &wgpu::SurfaceConfiguration {
         &self.config
     }
